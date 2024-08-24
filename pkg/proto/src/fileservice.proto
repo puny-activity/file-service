@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+//import "google/protobuf/any.proto";
+//import "google/protobuf/timestamp.proto";
+//
+//service FileService {
+//  rpc CreateRoot(CreateRootRequest) returns (CreateRootResponse);
+//  rpc GetRoots(GetRootsRequest) returns (GetRootsResponse);
+//  rpc DeleteRoot(DeleteRootRequest) returns (DeleteRootResponse);
+//  rpc Scan(ScanRequest) returns (ScanResponse);
+//}
+//
+//message CreateRootRequest {
+//  string type = 1;
+//  string name = 2;
+//  google.protobuf.Any details = 3;
+//}
+//
+//message CreateRootResponse {
+//  string id = 1;
+//  string name = 2;
+//}
+//
+//message GetRootsRequest {
+//
+//}
+//
+//message GetRootsResponse {
+//  repeated Item roots = 1;
+//  message Item {
+//    string id = 1;
+//    string name = 2;
+//    google.protobuf.Timestamp scannedAt = 3;
+//  }
+//}
+//
+//message DeleteRootRequest {
+//  string id = 1;
+//}
+//
+//message DeleteRootResponse {
+//
+//}
+//
+//message ScanRequest {
+//  repeated string id = 1;
+//}
+//
+//message ScanResponse {
+//
+//}
