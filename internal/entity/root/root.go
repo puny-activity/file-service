@@ -2,6 +2,7 @@ package root
 
 import (
 	"encoding/json"
+	"github.com/golang-module/carbon"
 	"github.com/google/uuid"
 	"github.com/puny-activity/file-service/internal/entity/root/roottype"
 	"github.com/puny-activity/file-service/pkg/util"
@@ -14,10 +15,11 @@ func (e ID) String() string {
 }
 
 type Root struct {
-	ID      *ID
-	Type    roottype.Type
-	Name    string
-	Details json.RawMessage
+	ID        *ID
+	Type      roottype.Type
+	Name      string
+	Config    json.RawMessage
+	ScannedAt *carbon.Carbon
 }
 
 func (e Root) GenerateID() Root {

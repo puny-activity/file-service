@@ -2,28 +2,35 @@ package localstorage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/internal/entity/root/roottype"
 	"github.com/puny-activity/file-service/pkg/werr"
 	"os"
 )
 
 type Config struct {
-	path string
+	rootID root.ID
+	path   string
 }
 
 type config struct {
-	Path string `json:"path"`
+	Path *string `json:"path"`
 }
 
-func NewConfig(jsonConfig json.RawMessage) (*Config, error) {
+func NewConfig(rootID root.ID, jsonConfig json.RawMessage) (*Config, error) {
 	var l config
 	err := json.Unmarshal(jsonConfig, &l)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal json: %v", err)
 	}
 
-	_, err = os.Stat(l.Path)
+	if l.Path == nil {
+		return nil, errors.New("path is required")
+	}
+
+	_, err = os.Stat(*l.Path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, werr.WrapSE("path does not exist", err)
@@ -32,12 +39,17 @@ func NewConfig(jsonConfig json.RawMessage) (*Config, error) {
 	}
 
 	return &Config{
-		path: l.Path,
+		rootID: rootID,
+		path:   *l.Path,
 	}, nil
 }
 
 func (c Config) Path() string {
 	return c.path
+}
+
+func (c Config) ID() root.ID {
+	return c.rootID
 }
 
 func (c Config) Type() roottype.Type {
@@ -46,6 +58,6 @@ func (c Config) Type() roottype.Type {
 
 func (c Config) JSONRawMessage() (json.RawMessage, error) {
 	return json.Marshal(config{
-		Path: c.path,
+		Path: &c.path,
 	})
 }

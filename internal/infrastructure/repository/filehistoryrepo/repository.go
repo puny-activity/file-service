@@ -7,7 +7,15 @@ import (
 )
 
 type Repository struct {
-	db        *sqlx.Tx
+	db        *sqlx.DB
 	txManager txmanager.Transactor
 	log       *zerolog.Logger
+}
+
+func New(db *sqlx.DB, txManager txmanager.Transactor, log *zerolog.Logger) *Repository {
+	return &Repository{
+		db:        db,
+		txManager: txManager,
+		log:       log,
+	}
 }

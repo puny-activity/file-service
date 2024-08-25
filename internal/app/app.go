@@ -2,10 +2,12 @@ package app
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/puny-activity/file-service/internal/config"
-	"github.com/puny-activity/file-service/internal/entity/root/roottype"
+	"github.com/puny-activity/file-service/internal/infrastructure/repository/filehistoryrepo"
+	"github.com/puny-activity/file-service/internal/infrastructure/repository/filerepo"
+	"github.com/puny-activity/file-service/internal/infrastructure/repository/rootrepo"
 	"github.com/puny-activity/file-service/internal/infrastructure/storage"
+	"github.com/puny-activity/file-service/internal/usecase/fileuc"
 	"github.com/puny-activity/file-service/internal/usecase/rootuc"
 	"github.com/puny-activity/file-service/pkg/postgres"
 	"github.com/puny-activity/file-service/pkg/txmanager"
@@ -14,6 +16,7 @@ import (
 
 type App struct {
 	RootUseCase *rootuc.UseCase
+	FileUseCase *fileuc.UseCase
 	log         *zerolog.Logger
 }
 
@@ -30,46 +33,23 @@ func New(cfg config.App, log *zerolog.Logger) *App {
 
 	txManager := txmanager.New(db.DB)
 
-	localStorageConfig, err := storage.NewConfig(roottype.Local, json.RawMessage(
-		"{ \"path\": \"/home/zalimannard/Музыка/\" }",
-	))
-	if err != nil {
-		panic(err)
-	}
-	localStorage, err := storage.New(localStorageConfig, log)
-	if err != nil {
-		panic(err)
-	}
+	storageController := storage.NewController(log)
 
-	minioStorageConfig, err := storage.NewConfig(roottype.Minio, json.RawMessage(
-		"{ \"endpoint\": \"localhost:9000\", \"username\": \"user\", \"password\": \"password\", \"use_ssl\": false }",
-	))
+	rootRepository := rootrepo.New(db.DB, txManager, log)
+	fileRepository := filerepo.New(db.DB, txManager, log)
+	fileHistoryRepository := filehistoryrepo.New(db.DB, txManager, log)
+
+	rootUseCase := rootuc.New(storageController, rootRepository, txManager, log)
+	fileUseCase := fileuc.New(storageController, fileRepository, fileHistoryRepository, txManager, log)
+
+	err = rootUseCase.ReloadStorages(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	minioStorage, err := storage.New(minioStorageConfig, log)
-	if err != nil {
-		panic(err)
-	}
-
-	ctx := context.Background()
-
-	localFiles, err := localStorage.GetFiles(ctx)
-	if err != nil {
-		panic(err)
-	}
-	log.Info().Int("count", len(localFiles)).Any("localFiles", localFiles).Msg("local files")
-
-	minioFiles, err := minioStorage.GetFiles(ctx)
-	if err != nil {
-		panic(err)
-	}
-	log.Info().Int("count", len(minioFiles)).Any("minioFiles", minioFiles).Msg("minio files")
-
-	rootUseCase := rootuc.New(txManager, log)
 
 	return &App{
 		RootUseCase: rootUseCase,
+		FileUseCase: fileUseCase,
 		log:         log,
 	}
 }

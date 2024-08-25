@@ -15,7 +15,7 @@ var rootTypes = map[string]Type{
 	"MINIO": Minio,
 }
 
-func New(typeName string) (Type, error) {
+func Parse(typeName string) (Type, error) {
 	rootType, ok := rootTypes[typeName]
 	if !ok {
 		return Unknown, fmt.Errorf("unknown root type: %s", typeName)
