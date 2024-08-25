@@ -10,10 +10,12 @@ import (
 	"github.com/puny-activity/file-service/pkg/minioclient"
 	"github.com/puny-activity/file-service/pkg/werr"
 	"github.com/rs/zerolog"
+	"io"
 )
 
 type Storage interface {
 	GetFiles(ctx context.Context) ([]file.File, error)
+	ReadFile(ctx context.Context, file file.File) (io.ReadCloser, error)
 }
 
 func New(cfg Config, log *zerolog.Logger) (Storage, error) {

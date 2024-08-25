@@ -7,6 +7,7 @@ import (
 	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/txmanager"
 	"github.com/rs/zerolog"
+	"io"
 )
 
 type UseCase struct {
@@ -31,6 +32,7 @@ func New(storageController storageController, fileRepository fileRepository,
 type storageController interface {
 	GetRootIDs() []root.ID
 	GetFiles(ctx context.Context, rootID root.ID) ([]file.File, error)
+	ReadFile(ctx context.Context, rootID root.ID, file file.File) (io.ReadCloser, error)
 }
 
 type fileRepository interface {
@@ -38,6 +40,8 @@ type fileRepository interface {
 	Create(ctx context.Context, rootID root.ID, fileToCreate file.File) error
 	Update(ctx context.Context, fileToUpdate file.File) error
 	Delete(ctx context.Context, fileID file.ID) error
+	GetRootID(ctx context.Context, fileID file.ID) (root.ID, error)
+	Get(ctx context.Context, fileID file.ID) (file.File, error)
 }
 
 type fileHistoryRepository interface {

@@ -41,6 +41,9 @@ type GRPC struct {
 }
 
 type WebSocket struct {
+	ReadBufferSize  int
+	WriteBufferSize int
+	Port            int
 }
 
 func Parse() (*Config, error) {

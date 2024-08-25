@@ -21,3 +21,13 @@ func nameByPath(path string) string {
 	pathParts := strings.Split(path, "/")
 	return pathParts[len(pathParts)-1]
 }
+
+func bucketFilenamePyPath(path string) string {
+	bucketName := bucketPyPath(path)
+	return strings.TrimPrefix(path, bucketName)
+}
+
+func bucketPyPath(path string) string {
+	pathParts := strings.Split(path, "/")
+	return pathParts[0]
+}

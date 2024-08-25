@@ -8,6 +8,7 @@ import (
 	"github.com/puny-activity/file-service/pkg/util"
 	"github.com/puny-activity/file-service/pkg/werr"
 	"github.com/rs/zerolog"
+	"io"
 )
 
 type Controller struct {
@@ -49,4 +50,12 @@ func (c *Controller) GetFiles(ctx context.Context, rootID root.ID) ([]file.File,
 		return nil, errors.New("storage not found")
 	}
 	return storage.GetFiles(ctx)
+}
+
+func (c *Controller) ReadFile(ctx context.Context, rootID root.ID, file file.File) (io.ReadCloser, error) {
+	storage, ok := c.storages[rootID]
+	if !ok {
+		return nil, errors.New("storage not found")
+	}
+	return storage.ReadFile(ctx, file)
 }
