@@ -1,10 +1,10 @@
-package historyrow
+package filehistory
 
 import (
 	"github.com/golang-module/carbon"
 	"github.com/google/uuid"
 	"github.com/puny-activity/file-service/internal/entity/file"
-	"github.com/puny-activity/file-service/internal/entity/historyrow/actiontype"
+	"github.com/puny-activity/file-service/internal/entity/filehistory/actiontype"
 	"github.com/puny-activity/file-service/pkg/util"
 )
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/puny-activity/file-service/config"
 	"github.com/puny-activity/file-service/internal/app"
 	appconfig "github.com/puny-activity/file-service/internal/config"
@@ -33,6 +34,7 @@ func main() {
 	}
 
 	application := app.New(appConfig, log)
+	application.FileUseCase.ScanAll(context.Background())
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)

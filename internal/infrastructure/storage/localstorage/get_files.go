@@ -86,6 +86,8 @@ func getFilesByPath(path string) ([]file.File, error) {
 				if err != nil {
 					return nil, werr.WrapSE("failed to convert metadata to json", err)
 				}
+			} else {
+				metadata = []byte("{}")
 			}
 
 			files = append(files, file.File{

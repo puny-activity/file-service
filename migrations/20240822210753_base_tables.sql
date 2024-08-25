@@ -7,7 +7,7 @@ CREATE TABLE roots
     type       root_type NOT NULL,
     name       TEXT      NOT NULL,
     config     JSON      NOT NULL,
-    scanned_at TIMESTAMPTZ
+    scanned_at TIMESTAMP
 );
 
 CREATE TABLE files
@@ -18,7 +18,7 @@ CREATE TABLE files
     name         TEXT     NOT NULL,
     content_type TEXT     NOT NULL,
     size         BIGINT   NOT NULL,
-    metadata     JSON     NOT NULL,
+    metadata     JSON,
     md5          CHAR(32) NOT NULL
 );
 
@@ -27,8 +27,8 @@ CREATE TABLE file_history
 (
     id           UUID PRIMARY KEY,
     file_id      UUID        NOT NULL,
-    type         action_type NOT NULL,
-    performed_at TIMESTAMPTZ NOT NULL
+    action_type  action_type NOT NULL,
+    performed_at TIMESTAMP   NOT NULL
 );
 -- +goose StatementEnd
 

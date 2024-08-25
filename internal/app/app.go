@@ -11,12 +11,14 @@ import (
 	"github.com/puny-activity/file-service/internal/usecase/rootuc"
 	"github.com/puny-activity/file-service/pkg/postgres"
 	"github.com/puny-activity/file-service/pkg/txmanager"
+	"github.com/puny-activity/file-service/pkg/werr"
 	"github.com/rs/zerolog"
 )
 
 type App struct {
 	RootUseCase *rootuc.UseCase
 	FileUseCase *fileuc.UseCase
+	db          *postgres.Postgres
 	log         *zerolog.Logger
 }
 
@@ -25,7 +27,6 @@ func New(cfg config.App, log *zerolog.Logger) *App {
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
 	err = db.RunMigrations(cfg.Database.MigrationsPath)
 	if err != nil {
 		panic(err)
@@ -50,10 +51,15 @@ func New(cfg config.App, log *zerolog.Logger) *App {
 	return &App{
 		RootUseCase: rootUseCase,
 		FileUseCase: fileUseCase,
+		db:          db,
 		log:         log,
 	}
 }
 
 func (a *App) Close() error {
+	err := a.db.Close()
+	if err != nil {
+		return werr.WrapSE("failed to close database connection", err)
+	}
 	return nil
 }

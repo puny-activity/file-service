@@ -29,6 +29,8 @@ func New(connectionString string) (*Postgres, error) {
 }
 
 func (p *Postgres) RunMigrations(migrationPath string) error {
+	goose.SetTableName("migrations")
+
 	err := goose.Up(p.DB.DB, migrationPath)
 	if err != nil {
 		return werr.WrapSE("failed to run migrations", err)
@@ -37,6 +39,6 @@ func (p *Postgres) RunMigrations(migrationPath string) error {
 	return nil
 }
 
-func (p *Postgres) Close() {
-	p.DB.Close()
+func (p *Postgres) Close() error {
+	return p.DB.Close()
 }
