@@ -40,7 +40,7 @@ func (s *WebSocketServer) Start() {
 		}
 		defer conn.Close()
 
-		fileUUID, _ := uuid.Parse("a3a2137c-ac08-405a-8445-0f64f4bdf343")
+		fileUUID, _ := uuid.Parse("a2786f4d-f67e-44f9-b347-fdde97137417")
 		fileReader, err := s.application.FileUseCase.ReadFile(r.Context(), file.ID(fileUUID))
 		if err != nil {
 			log.Println(err)

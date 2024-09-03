@@ -17,6 +17,6 @@ api:
   grpc:
     port: 9090
   websocket:
-    readbuffersize: 1024
-    writebuffersize: 1024
+    readbuffersize: 65536
+    writebuffersize: 65536
     port: 7070

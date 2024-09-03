@@ -30,7 +30,7 @@ func (u *UseCase) ScanAll(ctx context.Context) {
 func (u *UseCase) scan(ctx context.Context, rootID root.ID) error {
 	u.log.Info().Str("rootId", rootID.String()).Msg("scanning root")
 
-	savedFilesList, err := u.fileRepository.GetAll(ctx, rootID)
+	savedFilesList, err := u.fileRepository.GetAllByRoot(ctx, rootID)
 	if err != nil {
 		return werr.WrapSE("failed to get saved files", err)
 	}

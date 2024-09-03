@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/puny-activity/file-service/internal/entity/file"
 	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/util"
@@ -49,7 +50,16 @@ func (c *Controller) GetFiles(ctx context.Context, rootID root.ID) ([]file.File,
 	if !ok {
 		return nil, errors.New("storage not found")
 	}
-	return storage.GetFiles(ctx)
+
+	files, err := storage.GetFiles(ctx)
+	if err != nil {
+		return nil, werr.WrapSE("failed to get files", err)
+	}
+	for i := range files {
+		files[i].Path = fmt.Sprintf("%s/%s", rootID.String(), files[i].Path)
+	}
+
+	return files, nil
 }
 
 func (c *Controller) ReadFile(ctx context.Context, rootID root.ID, file file.File) (io.ReadCloser, error) {

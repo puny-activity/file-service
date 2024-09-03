@@ -4,15 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/google/uuid"
-	sqlx "github.com/jmoiron/sqlx"
+	"github.com/jmoiron/sqlx"
 	"github.com/puny-activity/file-service/internal/entity/file"
 	"github.com/puny-activity/file-service/internal/entity/file/filecontenttype"
+	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/queryer"
 	"github.com/puny-activity/file-service/pkg/util"
 	"github.com/puny-activity/file-service/pkg/werr"
 )
 
-type getAllEntity struct {
+type getAllByRootEntity struct {
 	ID          uuid.UUID       `db:"id"`
 	Path        string          `db:"path"`
 	Name        string          `db:"name"`
@@ -22,15 +23,15 @@ type getAllEntity struct {
 	MD5         string          `db:"md5"`
 }
 
-func (r *Repository) GetAll(ctx context.Context) ([]file.File, error) {
-	return r.getAll(ctx, r.db)
+func (r *Repository) GetAllByRoot(ctx context.Context, rootID root.ID) ([]file.File, error) {
+	return r.getAllByRoot(ctx, r.db, rootID)
 }
 
-func (r *Repository) GetAllTx(ctx context.Context, tx *sqlx.Tx) ([]file.File, error) {
-	return r.getAll(ctx, tx)
+func (r *Repository) GetAllByRootTx(ctx context.Context, tx *sqlx.Tx, rootID root.ID) ([]file.File, error) {
+	return r.getAllByRoot(ctx, tx, rootID)
 }
 
-func (r *Repository) getAll(ctx context.Context, queryer queryer.Queryer) ([]file.File, error) {
+func (r *Repository) getAllByRoot(ctx context.Context, queryer queryer.Queryer, rootID root.ID) ([]file.File, error) {
 	query := `
 SELECT id,
        path,
@@ -40,10 +41,11 @@ SELECT id,
        metadata,
        md5
 FROM files f
+WHERE f.root_id = $1
 `
 
-	filesRepo := make([]getAllEntity, 0)
-	err := queryer.SelectContext(ctx, &filesRepo, query)
+	filesRepo := make([]getAllByRootEntity, 0)
+	err := queryer.SelectContext(ctx, &filesRepo, query, rootID.String())
 	if err != nil {
 		return nil, err
 	}
