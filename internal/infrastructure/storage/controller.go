@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/puny-activity/file-service/internal/entity/file"
+	"github.com/puny-activity/file-service/internal/entity/file/path"
 	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/util"
 	"github.com/puny-activity/file-service/pkg/werr"
@@ -24,8 +24,8 @@ func NewController(log *zerolog.Logger) *Controller {
 	}
 }
 
-func (c *Controller) Add(cfg Config, log *zerolog.Logger) error {
-	newStorage, err := New(cfg, log)
+func (c *Controller) Add(cfg Config) error {
+	newStorage, err := New(cfg, c.log)
 	if err != nil {
 		return werr.WrapSE("failed to initialize storage", err)
 	}
@@ -33,7 +33,7 @@ func (c *Controller) Add(cfg Config, log *zerolog.Logger) error {
 	return nil
 }
 
-func (c *Controller) Delete(rootID root.ID) {
+func (c *Controller) Remove(rootID root.ID) {
 	delete(c.storages, rootID)
 }
 
@@ -56,7 +56,7 @@ func (c *Controller) GetFiles(ctx context.Context, rootID root.ID) ([]file.File,
 		return nil, werr.WrapSE("failed to get files", err)
 	}
 	for i := range files {
-		files[i].Path = fmt.Sprintf("%s/%s", rootID.String(), files[i].Path)
+		files[i].Path = path.New(rootID, files[i].Path.RelativePath())
 	}
 
 	return files, nil

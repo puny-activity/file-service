@@ -36,7 +36,7 @@ func (u *UseCase) scan(ctx context.Context, rootID root.ID) error {
 	}
 	savedFilesByPath := make(map[string]file.File)
 	for i := range savedFilesList {
-		savedFilesByPath[savedFilesList[i].Path] = savedFilesList[i]
+		savedFilesByPath[savedFilesList[i].Path.RelativePath()] = savedFilesList[i]
 	}
 
 	actualFilesList, err := u.storageController.GetFiles(ctx, rootID)
@@ -45,7 +45,7 @@ func (u *UseCase) scan(ctx context.Context, rootID root.ID) error {
 	}
 	actualFilesByPath := make(map[string]file.File)
 	for i := range actualFilesList {
-		actualFilesByPath[actualFilesList[i].Path] = actualFilesList[i]
+		actualFilesByPath[actualFilesList[i].Path.RelativePath()] = actualFilesList[i]
 	}
 
 	filesToCreate := make([]file.File, 0)
@@ -72,9 +72,9 @@ func (u *UseCase) scan(ctx context.Context, rootID root.ID) error {
 
 	for _, fileToCreate := range filesToCreate {
 		fileToCreate = fileToCreate.GenerateID()
-		err := u.fileRepository.Create(ctx, rootID, fileToCreate)
+		err := u.fileRepository.Create(ctx, fileToCreate)
 		if err != nil {
-			u.log.Warn().Str("path", fileToCreate.Path).Err(err).Msg("failed to create file")
+			u.log.Warn().Str("path", fileToCreate.Path.RelativePath()).Err(err).Msg("failed to create file")
 			continue
 		}
 
@@ -93,7 +93,7 @@ func (u *UseCase) scan(ctx context.Context, rootID root.ID) error {
 	for _, fileToUpdate := range filesToUpdate {
 		err := u.fileRepository.Update(ctx, fileToUpdate)
 		if err != nil {
-			u.log.Warn().Err(err).Str("path", fileToUpdate.Path).Msg("failed to update file")
+			u.log.Warn().Err(err).Str("path", fileToUpdate.Path.RelativePath()).Msg("failed to update file")
 			continue
 		}
 
@@ -112,7 +112,7 @@ func (u *UseCase) scan(ctx context.Context, rootID root.ID) error {
 	for _, fileToDelete := range filesToDelete {
 		err := u.fileRepository.Delete(ctx, *fileToDelete.ID)
 		if err != nil {
-			u.log.Warn().Err(err).Str("path", fileToDelete.Path).Msg("failed to delete file")
+			u.log.Warn().Err(err).Str("path", fileToDelete.Path.RelativePath()).Msg("failed to delete file")
 			continue
 		}
 

@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"github.com/minio/minio-go/v7"
 	"github.com/puny-activity/file-service/internal/entity/file"
-	"github.com/puny-activity/file-service/internal/entity/file/filecontenttype"
+	"github.com/puny-activity/file-service/internal/entity/file/contenttype"
+	"github.com/puny-activity/file-service/internal/entity/file/path"
+	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/metadatareader"
 	"github.com/puny-activity/file-service/pkg/werr"
 )
@@ -40,7 +42,7 @@ func (s *Storage) GetFiles(ctx context.Context) ([]file.File, error) {
 			if contentTypeStr == "" {
 				contentTypeStr = "application/octet-stream"
 			}
-			contentType, err := filecontenttype.New(contentTypeStr)
+			contentType, err := contenttype.New(contentTypeStr)
 			if err != nil {
 				return nil, werr.WrapSE("failed to construct content type", err)
 			}
@@ -69,7 +71,7 @@ func (s *Storage) GetFiles(ctx context.Context) ([]file.File, error) {
 			}
 
 			files = append(files, file.File{
-				Path:        bucket.Name + "/" + objectInfo.Key,
+				Path:        path.New(root.ID{}, objectInfo.Key),
 				Name:        nameByPath(objectInfo.Key),
 				ContentType: contentType,
 				Size:        objectInfo.Size,

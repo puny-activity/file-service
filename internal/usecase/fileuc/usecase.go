@@ -2,6 +2,8 @@ package fileuc
 
 import (
 	"context"
+	"github.com/golang-module/carbon"
+	"github.com/jmoiron/sqlx"
 	"github.com/puny-activity/file-service/internal/entity/file"
 	"github.com/puny-activity/file-service/internal/entity/filehistory"
 	"github.com/puny-activity/file-service/internal/entity/root"
@@ -38,13 +40,15 @@ type storageController interface {
 type fileRepository interface {
 	GetAll(ctx context.Context) ([]file.File, error)
 	GetAllByRoot(ctx context.Context, rootID root.ID) ([]file.File, error)
-	Create(ctx context.Context, rootID root.ID, fileToCreate file.File) error
+	Create(ctx context.Context, fileToCreate file.File) error
 	Update(ctx context.Context, fileToUpdate file.File) error
 	Delete(ctx context.Context, fileID file.ID) error
 	GetRootID(ctx context.Context, fileID file.ID) (root.ID, error)
 	Get(ctx context.Context, fileID file.ID) (file.File, error)
+	GetAllByIDsTx(ctx context.Context, tx *sqlx.Tx, fileIDs []file.ID) ([]file.File, error)
 }
 
 type fileHistoryRepository interface {
 	Create(ctx context.Context, row filehistory.Row) error
+	GetSinceTx(ctx context.Context, tx *sqlx.Tx, updatedSince carbon.Carbon) ([]filehistory.Row, error)
 }

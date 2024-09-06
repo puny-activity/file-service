@@ -41,7 +41,7 @@ WHERE f.id = :id
 
 	parameter := updateEntity{
 		ID:          uuid.UUID(*fileToCreate.ID),
-		Path:        fileToCreate.Path,
+		Path:        fileToCreate.Path.RelativePath(),
 		Name:        fileToCreate.Name,
 		ContentType: fileToCreate.ContentType.String(),
 		Size:        fileToCreate.Size,

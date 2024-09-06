@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/puny-activity/file-service/internal/entity/file"
-	"github.com/puny-activity/file-service/internal/entity/file/filecontenttype"
+	"github.com/puny-activity/file-service/internal/entity/file/contenttype"
+	"github.com/puny-activity/file-service/internal/entity/file/path"
+	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/metadatareader"
 	"github.com/puny-activity/file-service/pkg/werr"
 	"os"
@@ -20,14 +22,14 @@ func (s *Storage) GetFiles(ctx context.Context) ([]file.File, error) {
 	}
 
 	for i := range files {
-		files[i].Path = strings.TrimPrefix(files[i].Path, s.basePath)
+		files[i].Path = path.New(root.ID{}, strings.TrimPrefix(files[i].Path.RelativePath(), s.basePath))
 	}
 
 	return files, nil
 }
 
-func getFilesByPath(path string) ([]file.File, error) {
-	entries, err := os.ReadDir(path)
+func getFilesByPath(absolutePath string) ([]file.File, error) {
+	entries, err := os.ReadDir(absolutePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read directory: %w", err)
 	}
@@ -35,7 +37,7 @@ func getFilesByPath(path string) ([]file.File, error) {
 	files := make([]file.File, 0)
 
 	for _, entry := range entries {
-		entryPath := filepath.Join(path, entry.Name())
+		entryPath := filepath.Join(absolutePath, entry.Name())
 		if entry.IsDir() {
 			subDirFiles, err := getFilesByPath(entryPath)
 			if err != nil {
@@ -62,7 +64,7 @@ func getFilesByPath(path string) ([]file.File, error) {
 			if err != nil {
 				return nil, werr.WrapSE("failed to detect content type", err)
 			}
-			contentType, err := filecontenttype.New(contentTypeStr)
+			contentType, err := contenttype.New(contentTypeStr)
 			if err != nil {
 				return nil, werr.WrapSE("failed to construct content type", err)
 			}
@@ -91,7 +93,7 @@ func getFilesByPath(path string) ([]file.File, error) {
 			}
 
 			files = append(files, file.File{
-				Path:        entryPath,
+				Path:        path.New(root.ID{}, entryPath),
 				Name:        entry.Name(),
 				ContentType: contentType,
 				Size:        fileInfo.Size(),

@@ -8,5 +8,5 @@ import (
 )
 
 func (s *Storage) ReadFile(ctx context.Context, file file.File) (io.ReadCloser, error) {
-	return s.minioClient.GetObject(ctx, bucketPyPath(file.Path), bucketFilenamePyPath(file.Path), minio.GetObjectOptions{})
+	return s.minioClient.GetObject(ctx, bucketPyPath(file.Path.RelativePath()), bucketFilenamePyPath(file.Path.RelativePath()), minio.GetObjectOptions{})
 }

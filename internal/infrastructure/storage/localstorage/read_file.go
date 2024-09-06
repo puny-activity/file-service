@@ -9,5 +9,5 @@ import (
 )
 
 func (s *Storage) ReadFile(ctx context.Context, file file.File) (io.ReadCloser, error) {
-	return os.Open(filepath.Join(s.basePath, file.Path))
+	return os.Open(filepath.Join(s.basePath, file.Path.RelativePath()))
 }

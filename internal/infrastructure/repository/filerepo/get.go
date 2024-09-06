@@ -6,14 +6,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/puny-activity/file-service/internal/entity/file"
-	"github.com/puny-activity/file-service/internal/entity/file/filecontenttype"
+	"github.com/puny-activity/file-service/internal/entity/file/contenttype"
+	"github.com/puny-activity/file-service/internal/entity/file/path"
+	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/queryer"
-	"github.com/puny-activity/file-service/pkg/util"
 	"github.com/puny-activity/file-service/pkg/werr"
 )
 
 type getEntity struct {
-	ID          uuid.UUID       `db:"id"`
+	ID          string          `db:"id"`
+	RootID      string          `db:"root_id"`
 	Path        string          `db:"path"`
 	Name        string          `db:"name"`
 	ContentType string          `db:"content_type"`
@@ -49,14 +51,20 @@ WHERE f.id = $1
 		return file.File{}, err
 	}
 
-	contentType, err := filecontenttype.New(fileRepo.ContentType)
+	contentType, err := contenttype.New(fileRepo.ContentType)
 	if err != nil {
 		return file.File{}, werr.WrapSE("failed to parse content type", err)
 	}
 
+	rootID, err := root.ParseID(fileRepo.RootID)
+	if err != nil {
+		return file.File{}, werr.WrapSE("failed to parse root id", err)
+	}
+	filePath := path.New(rootID, fileRepo.Path)
+
 	file := file.File{
-		ID:          util.ToPointer(file.ID(fileRepo.ID)),
-		Path:        fileRepo.Path,
+		ID:          &fileID,
+		Path:        filePath,
 		Name:        fileRepo.Name,
 		ContentType: contentType,
 		Size:        fileRepo.Size,

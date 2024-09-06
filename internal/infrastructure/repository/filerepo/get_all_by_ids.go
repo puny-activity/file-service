@@ -3,7 +3,7 @@ package filerepo
 import (
 	"context"
 	"encoding/json"
-	sqlx "github.com/jmoiron/sqlx"
+	"github.com/jmoiron/sqlx"
 	"github.com/puny-activity/file-service/internal/entity/file"
 	"github.com/puny-activity/file-service/internal/entity/file/contenttype"
 	"github.com/puny-activity/file-service/internal/entity/file/path"
@@ -12,9 +12,9 @@ import (
 	"github.com/puny-activity/file-service/pkg/werr"
 )
 
-type getAllEntity struct {
+type getAllByIDsEntity struct {
 	ID          string          `db:"id"`
-	RootID      string          `db:"rootID"`
+	RootID      string          `db:"root_id"`
 	Path        string          `db:"path"`
 	Name        string          `db:"name"`
 	ContentType string          `db:"content_type"`
@@ -23,17 +23,18 @@ type getAllEntity struct {
 	MD5         string          `db:"md5"`
 }
 
-func (r *Repository) GetAll(ctx context.Context) ([]file.File, error) {
-	return r.getAll(ctx, r.db)
+func (r *Repository) GetAllByIDs(ctx context.Context, fileIDs []file.ID) ([]file.File, error) {
+	return r.getAllByIDs(ctx, r.db, fileIDs)
 }
 
-func (r *Repository) GetAllTx(ctx context.Context, tx *sqlx.Tx) ([]file.File, error) {
-	return r.getAll(ctx, tx)
+func (r *Repository) GetAllByIDsTx(ctx context.Context, tx *sqlx.Tx, fileIDs []file.ID) ([]file.File, error) {
+	return r.getAllByIDs(ctx, tx, fileIDs)
 }
 
-func (r *Repository) getAll(ctx context.Context, queryer queryer.Queryer) ([]file.File, error) {
+func (r *Repository) getAllByIDs(ctx context.Context, queryer queryer.Queryer, fileIDs []file.ID) ([]file.File, error) {
 	query := `
 SELECT id,
+       root_id,
        path,
        name,
        content_type,
@@ -41,10 +42,16 @@ SELECT id,
        metadata,
        md5
 FROM files f
+WHERE f.id = ANY($1)
 `
 
-	filesRepo := make([]getAllEntity, 0)
-	err := queryer.SelectContext(ctx, &filesRepo, query)
+	fileIDsString := make([]string, len(fileIDs))
+	for i, id := range fileIDs {
+		fileIDsString[i] = id.String()
+	}
+
+	filesRepo := make([]getAllByIDsEntity, 0)
+	err := queryer.SelectContext(ctx, &filesRepo, query, fileIDsString)
 	if err != nil {
 		return nil, err
 	}
