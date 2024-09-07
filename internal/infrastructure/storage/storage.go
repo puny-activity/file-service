@@ -14,21 +14,22 @@ import (
 )
 
 type Storage interface {
+	Name() string
 	GetFiles(ctx context.Context) ([]file.File, error)
 	ReadFile(ctx context.Context, file file.File) (io.ReadCloser, error)
 }
 
-func New(cfg Config, log *zerolog.Logger) (Storage, error) {
+func New(cfg Config, rootName string, log *zerolog.Logger) (Storage, error) {
 	switch cfg.Type() {
 	case roottype.Local:
-		localStorage := localstorage.New(cfg.(*localstorage.Config).Path(), log)
+		localStorage := localstorage.New(cfg.(*localstorage.Config).Path(), rootName, log)
 		return localStorage, nil
 	case roottype.Minio:
 		minioClient, err := minioclient.New(cfg.(*miniostorage.Config))
 		if err != nil {
 			return nil, werr.WrapSE("failed to create minio client", err)
 		}
-		minioStorage := miniostorage.New(minioClient, log)
+		minioStorage := miniostorage.New(minioClient, rootName, log)
 		return minioStorage, nil
 	default:
 		return nil, fmt.Errorf("unknown root type: %v", cfg.Type())

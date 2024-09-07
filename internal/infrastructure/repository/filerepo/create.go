@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/jmoiron/sqlx"
 	"github.com/puny-activity/file-service/internal/entity/file"
+	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/queryer"
 )
 
@@ -19,15 +20,15 @@ type createEntity struct {
 	MD5         string          `db:"md5"`
 }
 
-func (r *Repository) Create(ctx context.Context, fileToCreate file.File) error {
-	return r.create(ctx, r.db, fileToCreate)
+func (r *Repository) Create(ctx context.Context, rootID root.ID, fileToCreate file.File) error {
+	return r.create(ctx, r.db, rootID, fileToCreate)
 }
 
-func (r *Repository) CreateTx(ctx context.Context, tx *sqlx.Tx, fileToCreate file.File) error {
-	return r.create(ctx, tx, fileToCreate)
+func (r *Repository) CreateTx(ctx context.Context, tx *sqlx.Tx, rootID root.ID, fileToCreate file.File) error {
+	return r.create(ctx, tx, rootID, fileToCreate)
 }
 
-func (r *Repository) create(ctx context.Context, queryer queryer.Queryer, fileToCreate file.File) error {
+func (r *Repository) create(ctx context.Context, queryer queryer.Queryer, rootID root.ID, fileToCreate file.File) error {
 	query := `
 INSERT INTO files(id, root_id, path, name, content_type, size, metadata, md5)
 VALUES (:id, :root_id, :path, :name, :content_type, :size, :metadata, :md5)
@@ -35,7 +36,7 @@ VALUES (:id, :root_id, :path, :name, :content_type, :size, :metadata, :md5)
 
 	parameter := createEntity{
 		ID:          (*fileToCreate.ID).String(),
-		RootID:      fileToCreate.Path.RootID().String(),
+		RootID:      rootID.String(),
 		Path:        fileToCreate.Path.RelativePath(),
 		Name:        fileToCreate.Name,
 		ContentType: fileToCreate.ContentType.String(),

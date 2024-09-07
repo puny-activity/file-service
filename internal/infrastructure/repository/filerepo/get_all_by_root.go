@@ -14,6 +14,7 @@ import (
 
 type getAllByRootEntity struct {
 	ID          string          `db:"id"`
+	RootName    string          `db:"root_name"`
 	Path        string          `db:"path"`
 	Name        string          `db:"name"`
 	ContentType string          `db:"content_type"`
@@ -32,14 +33,16 @@ func (r *Repository) GetAllByRootTx(ctx context.Context, tx *sqlx.Tx, rootID roo
 
 func (r *Repository) getAllByRoot(ctx context.Context, queryer queryer.Queryer, rootID root.ID) ([]file.File, error) {
 	query := `
-SELECT id,
+SELECT f.id,
+       r.name AS root_name,
        path,
-       name,
+       f.name,
        content_type,
        size,
        metadata,
        md5
 FROM files f
+         JOIN roots r ON r.id = f.root_id
 WHERE f.root_id = $1
 `
 
@@ -63,7 +66,7 @@ WHERE f.root_id = $1
 
 		files[i] = file.File{
 			ID:          &fileID,
-			Path:        path.New(rootID, filesRepo[i].Path),
+			Path:        path.New(filesRepo[i].RootName, filesRepo[i].Path),
 			Name:        filesRepo[i].Name,
 			ContentType: contentType,
 			Size:        filesRepo[i].Size,

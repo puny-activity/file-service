@@ -24,8 +24,8 @@ func NewController(log *zerolog.Logger) *Controller {
 	}
 }
 
-func (c *Controller) Add(cfg Config) error {
-	newStorage, err := New(cfg, c.log)
+func (c *Controller) Add(cfg Config, rootName string) error {
+	newStorage, err := New(cfg, rootName, c.log)
 	if err != nil {
 		return werr.WrapSE("failed to initialize storage", err)
 	}
@@ -56,7 +56,7 @@ func (c *Controller) GetFiles(ctx context.Context, rootID root.ID) ([]file.File,
 		return nil, werr.WrapSE("failed to get files", err)
 	}
 	for i := range files {
-		files[i].Path = path.New(rootID, files[i].Path.RelativePath())
+		files[i].Path = path.New(storage.Name(), files[i].Path.RelativePath())
 	}
 
 	return files, nil

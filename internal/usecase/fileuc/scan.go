@@ -72,7 +72,7 @@ func (u *UseCase) scan(ctx context.Context, rootID root.ID) error {
 
 	for _, fileToCreate := range filesToCreate {
 		fileToCreate = fileToCreate.GenerateID()
-		err := u.fileRepository.Create(ctx, fileToCreate)
+		err := u.fileRepository.Create(ctx, rootID, fileToCreate)
 		if err != nil {
 			u.log.Warn().Str("path", fileToCreate.Path.RelativePath()).Err(err).Msg("failed to create file")
 			continue

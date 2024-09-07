@@ -20,7 +20,7 @@ func (u *UseCase) ReloadStorages(ctx context.Context) error {
 			return werr.WrapSE("failed to create root config", err)
 		}
 
-		err = u.storageController.Add(rootConfig)
+		err = u.storageController.Add(rootConfig, roots[i].Name)
 		if err != nil {
 			return werr.WrapSE("failed to add storage to controller", err)
 		}

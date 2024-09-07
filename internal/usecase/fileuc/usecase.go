@@ -40,7 +40,7 @@ type storageController interface {
 type fileRepository interface {
 	GetAll(ctx context.Context) ([]file.File, error)
 	GetAllByRoot(ctx context.Context, rootID root.ID) ([]file.File, error)
-	Create(ctx context.Context, fileToCreate file.File) error
+	Create(ctx context.Context, rootID root.ID, fileToCreate file.File) error
 	Update(ctx context.Context, fileToUpdate file.File) error
 	Delete(ctx context.Context, fileID file.ID) error
 	GetRootID(ctx context.Context, fileID file.ID) (root.ID, error)

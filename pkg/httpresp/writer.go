@@ -2,7 +2,7 @@ package httpresp
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -21,7 +21,7 @@ func (w *Writer) Write(writer http.ResponseWriter, statusCode int, payload any) 
 	if payload != nil {
 		err := json.NewEncoder(writer).Encode(payload)
 		if err != nil {
-			return errors.New("failed to encode payload")
+			return fmt.Errorf("failed to encode payload")
 		}
 	}
 

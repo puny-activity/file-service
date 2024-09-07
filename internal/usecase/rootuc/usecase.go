@@ -25,7 +25,7 @@ func New(storageController storageController, rootRepository rootRepository, txM
 }
 
 type storageController interface {
-	Add(cfg storage.Config) error
+	Add(cfg storage.Config, rootName string) error
 	Remove(rootID root.ID)
 	Reset()
 	GetRootIDs() []root.ID

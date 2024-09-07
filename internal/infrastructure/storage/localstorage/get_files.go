@@ -7,7 +7,6 @@ import (
 	"github.com/puny-activity/file-service/internal/entity/file"
 	"github.com/puny-activity/file-service/internal/entity/file/contenttype"
 	"github.com/puny-activity/file-service/internal/entity/file/path"
-	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/metadatareader"
 	"github.com/puny-activity/file-service/pkg/werr"
 	"os"
@@ -22,7 +21,7 @@ func (s *Storage) GetFiles(ctx context.Context) ([]file.File, error) {
 	}
 
 	for i := range files {
-		files[i].Path = path.New(root.ID{}, strings.TrimPrefix(files[i].Path.RelativePath(), s.basePath))
+		files[i].Path = path.New("", strings.TrimPrefix(files[i].Path.RelativePath(), s.basePath))
 	}
 
 	return files, nil
@@ -93,7 +92,7 @@ func getFilesByPath(absolutePath string) ([]file.File, error) {
 			}
 
 			files = append(files, file.File{
-				Path:        path.New(root.ID{}, entryPath),
+				Path:        path.New("", entryPath),
 				Name:        entry.Name(),
 				ContentType: contentType,
 				Size:        fileInfo.Size(),

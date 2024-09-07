@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"github.com/golang-module/carbon"
 	"github.com/puny-activity/file-service/pkg/proto/gen/fileserviceproto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"strings"
 )
 
 func (a *Controller) GetChanges(ctx context.Context, request *fileserviceproto.GetChangesRequest) (*fileserviceproto.GetChangesResponse, error) {
@@ -26,7 +28,7 @@ func (a *Controller) GetChanges(ctx context.Context, request *fileserviceproto.G
 			Id:          &fileserviceproto.FileInfoId{Id: createdFile.ID.String()},
 			Name:        createdFile.Name,
 			ContentType: createdFile.ContentType.String(),
-			Path:        createdFile.Path.String(),
+			Path:        strings.TrimSuffix(createdFile.Path.String(), fmt.Sprintf(createdFile.Name)),
 			Size:        createdFile.Size,
 			Metadata:    createdFile.Metadata,
 			Md5:         createdFile.MD5,
@@ -38,7 +40,7 @@ func (a *Controller) GetChanges(ctx context.Context, request *fileserviceproto.G
 			Id:          &fileserviceproto.FileInfoId{Id: updatedFile.ID.String()},
 			Name:        updatedFile.Name,
 			ContentType: updatedFile.ContentType.String(),
-			Path:        updatedFile.Path.String(),
+			Path:        strings.TrimSuffix(updatedFile.Path.String(), fmt.Sprintf(updatedFile.Name)),
 			Size:        updatedFile.Size,
 			Metadata:    updatedFile.Metadata,
 			Md5:         updatedFile.MD5,

@@ -7,14 +7,13 @@ import (
 	"github.com/puny-activity/file-service/internal/entity/file"
 	"github.com/puny-activity/file-service/internal/entity/file/contenttype"
 	"github.com/puny-activity/file-service/internal/entity/file/path"
-	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/queryer"
 	"github.com/puny-activity/file-service/pkg/werr"
 )
 
 type getAllByIDsEntity struct {
 	ID          string          `db:"id"`
-	RootID      string          `db:"root_id"`
+	RootName    string          `db:"root_name"`
 	Path        string          `db:"path"`
 	Name        string          `db:"name"`
 	ContentType string          `db:"content_type"`
@@ -33,15 +32,16 @@ func (r *Repository) GetAllByIDsTx(ctx context.Context, tx *sqlx.Tx, fileIDs []f
 
 func (r *Repository) getAllByIDs(ctx context.Context, queryer queryer.Queryer, fileIDs []file.ID) ([]file.File, error) {
 	query := `
-SELECT id,
-       root_id,
+SELECT f.id,
+       r.name AS root_name,
        path,
-       name,
+       f.name,
        content_type,
        size,
        metadata,
        md5
 FROM files f
+         JOIN roots r on f.root_id = r.id
 WHERE f.id = ANY($1)
 `
 
@@ -63,11 +63,6 @@ WHERE f.id = ANY($1)
 			return nil, werr.WrapSE("failed to parse file id", err)
 		}
 
-		rootID, err := root.ParseID(filesRepo[i].RootID)
-		if err != nil {
-			return nil, werr.WrapSE("failed to parse root id", err)
-		}
-
 		contentType, err := contenttype.New(filesRepo[i].ContentType)
 		if err != nil {
 			return nil, werr.WrapSE("failed to parse content type", err)
@@ -75,7 +70,7 @@ WHERE f.id = ANY($1)
 
 		files[i] = file.File{
 			ID:          &fileID,
-			Path:        path.New(rootID, filesRepo[i].Path),
+			Path:        path.New(filesRepo[i].RootName, filesRepo[i].Path),
 			Name:        filesRepo[i].Name,
 			ContentType: contentType,
 			Size:        filesRepo[i].Size,

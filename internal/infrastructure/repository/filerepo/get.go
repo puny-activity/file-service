@@ -3,19 +3,17 @@ package filerepo
 import (
 	"context"
 	"encoding/json"
-	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/puny-activity/file-service/internal/entity/file"
 	"github.com/puny-activity/file-service/internal/entity/file/contenttype"
 	"github.com/puny-activity/file-service/internal/entity/file/path"
-	"github.com/puny-activity/file-service/internal/entity/root"
 	"github.com/puny-activity/file-service/pkg/queryer"
 	"github.com/puny-activity/file-service/pkg/werr"
 )
 
 type getEntity struct {
 	ID          string          `db:"id"`
-	RootID      string          `db:"root_id"`
+	RootName    string          `db:"root_name"`
 	Path        string          `db:"path"`
 	Name        string          `db:"name"`
 	ContentType string          `db:"content_type"`
@@ -34,19 +32,21 @@ func (r *Repository) GetTx(ctx context.Context, tx *sqlx.Tx, fileID file.ID) (fi
 
 func (r *Repository) get(ctx context.Context, queryer queryer.Queryer, fileID file.ID) (file.File, error) {
 	query := `
-SELECT id,
+SELECT f.id,
+       r.name AS root_name,
        path,
-       name,
+       f.name,
        content_type,
        size,
        metadata,
        md5
 FROM files f
+JOIN roots r ON r.id = f.root_id
 WHERE f.id = $1
 `
 
 	var fileRepo getEntity
-	err := queryer.GetContext(ctx, &fileRepo, query, uuid.UUID(fileID))
+	err := queryer.GetContext(ctx, &fileRepo, query, fileID.String())
 	if err != nil {
 		return file.File{}, err
 	}
@@ -56,15 +56,9 @@ WHERE f.id = $1
 		return file.File{}, werr.WrapSE("failed to parse content type", err)
 	}
 
-	rootID, err := root.ParseID(fileRepo.RootID)
-	if err != nil {
-		return file.File{}, werr.WrapSE("failed to parse root id", err)
-	}
-	filePath := path.New(rootID, fileRepo.Path)
-
 	file := file.File{
 		ID:          &fileID,
-		Path:        filePath,
+		Path:        path.New(fileRepo.RootName, fileRepo.Path),
 		Name:        fileRepo.Name,
 		ContentType: contentType,
 		Size:        fileRepo.Size,
